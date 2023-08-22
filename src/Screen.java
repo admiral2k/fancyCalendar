@@ -1,0 +1,3 @@
+public enum Screen {
+    MAIN, DELETE_ROW, CREATE_NEW_ROW, CHANGE_ORDER, CHANGE_END_DATE;
+}
