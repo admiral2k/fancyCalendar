@@ -4,7 +4,7 @@ public class Calendar {
     private boolean runningState = true;
     private Screen currentScreen = Screen.MAIN;
     private final Scanner scanner = new Scanner(System.in);
-    private String userInput;
+    private String userInput = "";
 
     // main function to draw a screen.
     public void drawScreen(){
@@ -27,9 +27,14 @@ public class Calendar {
 
     // receives the userInput
     public void input(){
-        userInput = scanner.nextLine();
+
+        // tabs, spaces check
+        do{
+            userInput = scanner.nextLine();
+        } while (userInput.isBlank());
     }
 
+    // main project logic
     // works with userInput taken from input() method
     public void process(){
         switch (currentScreen){
