@@ -60,6 +60,6 @@ For example: 6 hours, 3 days or 25 minutes.
 |   --|  _| -_| .'|  _| -_|  | | | | -_| | | |  |    -| . | | | |__|
 |_____|_| |___|__,|_| |___|  |_|___|___|_____|  |__|__|___|_____|__|
 
-You spend 8 hours on Gym each week, right? (y/n)
+You spend taskTime on taskName each week, right? (y/n)
 >
 
