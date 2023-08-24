@@ -1,0 +1,65 @@
+------- MAIN SCREEN ---------------------
+                                    __
+ _____           _    ____         |  |
+|   __|___ ___ _| |  |    \ ___ _ _|  |
+|  |  | . | . | . |  |  |  | .'| | |__|
+|_____|___|___|___|  |____/|__,|_  |__|
+                               |___|
+its 123 days to New Year! or...
+55 days of Gym
+48 hours of Programming
+120  minutes of meditating
+
+1. Delete row.
+2. Create new row.
+3. Change order.
+4. Change end date.
+5. Exit.
+>
+
+------ CREATE NEW ROW -------------------
+                                                                 __
+ _____             _          _____              _____          |  |
+|     |___ ___ ___| |_ ___   |   | |___ _ _ _   | __  |___ _ _ _|  |
+|   --|  _| -_| .'|  _| -_|  | | | | -_| | | |  |    -| . | | | |__|
+|_____|_| |___|__,|_| |___|  |_|___|___|_____|  |__|__|___|_____|__|
+
+Write down the name of the new task e.g. Gym, Meditation.
+>
+
+------ CREATE NEW ROW NAME CONFIRMATION --
+
+                                                                 __
+ _____             _          _____              _____          |  |
+|     |___ ___ ___| |_ ___   |   | |___ _ _ _   | __  |___ _ _ _|  |
+|   --|  _| -_| .'|  _| -_|  | | | | -_| | | |  |    -| . | | | |__|
+|_____|_| |___|__,|_| |___|  |_|___|___|_____|  |__|__|___|_____|__|
+
+Name of your task is "taskName", right?(y/n)
+>
+
+------ CREATE NEW ROW TIME INPUT ---------
+
+                                                                 __
+ _____             _          _____              _____          |  |
+|     |___ ___ ___| |_ ___   |   | |___ _ _ _   | __  |___ _ _ _|  |
+|   --|  _| -_| .'|  _| -_|  | | | | -_| | | |  |    -| . | | | |__|
+|_____|_| |___|__,|_| |___|  |_|___|___|_____|  |__|__|___|_____|__|
+
+Write down the amount of time you need per week for taskName.
+Available time measurements include: days, hours, and minutes.
+For example: 6 hours, 3 days or 25 minutes.
+>
+
+
+------ CREATE NEW ROW TIME CONFIRMATION --
+
+                                                                 __
+ _____             _          _____              _____          |  |
+|     |___ ___ ___| |_ ___   |   | |___ _ _ _   | __  |___ _ _ _|  |
+|   --|  _| -_| .'|  _| -_|  | | | | -_| | | |  |    -| . | | | |__|
+|_____|_| |___|__,|_| |___|  |_|___|___|_____|  |__|__|___|_____|__|
+
+You spend 8 hours on Gym each week, right? (y/n)
+>
+
