@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
@@ -13,15 +15,23 @@ public class Calendar {
     private Scanner scanner = new Scanner(System.in);
     private PrintWriter printWriter;
     private final File file = new File("data.txt");
-    private Map<String, String> tasksMap = new HashMap<>();
+    private Map<String, String> rawTasksMap = new HashMap<>();
 
     private String userInput = "";
     private String taskName = "";
     private String taskTime = "";
     private String inputHint = "";
 
+    private long daysUntilTheEndDate;
+    private LocalDate todayDate = LocalDate.now();
+    private LocalDate endDate = LocalDate.of(todayDate.getYear() + 1, 1, 1);
+    private String endDateName = "New Year";
+    private String[] customRows;
+
     public Calendar(){
         fileInput();
+        customRows = new String[rawTasksMap.size()];
+        countDaysUntilTheEndDate();
     }
 
     // worst clear console ever
@@ -44,7 +54,16 @@ public class Calendar {
 
         switch (currentScreen){
             case MAIN:
-                // TODO: add custom rows
+                // current date + days until end date
+                System.out.println("Today is " + todayDate.getMonth() + " " + todayDate.getDayOfMonth() + ".\n" +
+                        "Its " + daysUntilTheEndDate + " days until " + endDateName + "! or..");
+
+                // custom rows
+                for (int i = 0; i<customRows.length; i++) {
+                    System.out.println("\t" + customRows[i]);
+                }
+
+                // menu
                 System.out.println("\n" +
                         "1. Delete row.\n" +
                         "2. Create new row.\n" +
@@ -199,7 +218,7 @@ public class Calendar {
             // reading data
             while (tempScanner.hasNextLine()){
                 temp = tempScanner.nextLine().split(":");
-                tasksMap.put(temp[0], temp[1]);
+                rawTasksMap.put(temp[0], temp[1]);
             }
             tempScanner.close();
 
@@ -213,13 +232,32 @@ public class Calendar {
     private void fileOutput(){
         try {
             printWriter = new PrintWriter(file);
-            for(Map.Entry<String, String> element: tasksMap.entrySet()){
+            for(Map.Entry<String, String> element: rawTasksMap.entrySet()){
                 printWriter.println(element.getKey() + ":" + element.getValue());
             }
             printWriter.close();
+
         } catch (FileNotFoundException e) {
             // shall not occur
             e.printStackTrace();
+        }
+    }
+
+    private void countDaysUntilTheEndDate() {
+        daysUntilTheEndDate = ChronoUnit.DAYS.between(todayDate, endDate);
+        if (!rawTasksMap.isEmpty()) {
+            int counter = 0;
+            int tempTime;
+            String timeUnit;
+            String customRow;
+            for (Map.Entry<String, String> element : rawTasksMap.entrySet()) {
+                tempTime = Integer.valueOf(element.getValue().split(" ")[0]);
+                timeUnit = element.getValue().split(" ")[1];
+                customRow = String.valueOf(tempTime * (daysUntilTheEndDate / 7)) + " " + timeUnit
+                        + " on " + element.getKey();
+                customRows[counter] = customRow;
+                counter++;
+            }
         }
     }
 }
