@@ -1,3 +1,7 @@
+----- DATA STORAGE ----------------------
+taskTime1:taskName1
+taskTime2:taskName2
+taskTime3:taskName3
 ------- MAIN SCREEN ---------------------
                                     __
  _____           _    ____         |  |

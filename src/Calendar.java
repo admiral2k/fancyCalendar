@@ -1,9 +1,16 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.Scanner;
 
 public class Calendar {
     private boolean runningState = true;
     private Screen currentScreen = Screen.MAIN;
-    private final Scanner scanner = new Scanner(System.in);
+
+    // initialization only when needed to keep thread clean
+    private Scanner scanner;
+    private PrintWriter printWriter;
+    private final File file = new File("data.txt");
 
     private String userInput = "";
     private String taskName = "";
@@ -164,6 +171,7 @@ public class Calendar {
         return runningState;
     }
 
+    // converts userInput to an integer when needed for option selection.
     private int stringToInteger(String s) {
         try {
             return Integer.parseInt(s);
@@ -171,6 +179,30 @@ public class Calendar {
             // Handle the exception, e.g., return null or log an error message
             inputHint = "The provided string is not a valid integer: " + s;
             return 0;
+        }
+    }
+
+    // file input
+    private void fileInput(){
+        try {
+            scanner = new Scanner(file);
+            while (scanner.hasNextLine()){
+                // TODO: integrate HashMap
+            }
+            scanner.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // file output
+    private void fileOutput(){
+        try {
+            printWriter = new PrintWriter(file);
+            printWriter.println(":");
+            printWriter.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
         }
     }
 }
