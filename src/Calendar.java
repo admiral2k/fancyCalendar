@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 public class Calendar {
@@ -8,14 +10,19 @@ public class Calendar {
     private Screen currentScreen = Screen.MAIN;
 
     // initialization only when needed to keep thread clean
-    private Scanner scanner;
+    private Scanner scanner = new Scanner(System.in);
     private PrintWriter printWriter;
     private final File file = new File("data.txt");
+    private Map<String, String> tasksMap = new HashMap<>();
 
     private String userInput = "";
     private String taskName = "";
     private String taskTime = "";
     private String inputHint = "";
+
+    public Calendar(){
+        fileInput();
+    }
 
     // worst clear console ever
     private void cls(){
@@ -185,13 +192,20 @@ public class Calendar {
     // file input
     private void fileInput(){
         try {
-            scanner = new Scanner(file);
-            while (scanner.hasNextLine()){
-                // TODO: integrate HashMap
+            // creating tempScanner to not interrupt user input
+            Scanner tempScanner = new Scanner(file);
+            String[] temp;
+
+            // reading data
+            while (tempScanner.hasNextLine()){
+                temp = tempScanner.nextLine().split(":");
+                tasksMap.put(temp[0], temp[1]);
             }
-            scanner.close();
+            tempScanner.close();
+
         } catch (FileNotFoundException e) {
-            e.printStackTrace();
+            // creating blank file
+            fileOutput();
         }
     }
 
@@ -199,9 +213,12 @@ public class Calendar {
     private void fileOutput(){
         try {
             printWriter = new PrintWriter(file);
-            printWriter.println(":");
+            for(Map.Entry<String, String> element: tasksMap.entrySet()){
+                printWriter.println(element.getKey() + ":" + element.getValue());
+            }
             printWriter.close();
         } catch (FileNotFoundException e) {
+            // shall not occur
             e.printStackTrace();
         }
     }
