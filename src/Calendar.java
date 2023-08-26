@@ -50,7 +50,7 @@ public class Calendar {
         System.out.println(currentScreen.getAsciiLabel());
 
         // prints input hint message based on wrong input if there is one
-        System.out.println(inputHint);
+        if (!inputHint.isBlank()) System.out.println("!!! " + inputHint + "\n");
 
         switch (currentScreen){
             case MAIN:
