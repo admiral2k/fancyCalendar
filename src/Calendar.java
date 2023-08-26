@@ -11,9 +11,7 @@ public class Calendar {
     private boolean runningState = true;
     private Screen currentScreen = Screen.MAIN;
 
-    // initialization only when needed to keep thread clean
-    private Scanner scanner = new Scanner(System.in);
-    private PrintWriter printWriter;
+    private final Scanner scanner = new Scanner(System.in);
     private final File file = new File("data.txt");
     private Map<String, String> rawTasksMap = new HashMap<>();
 
@@ -28,17 +26,11 @@ public class Calendar {
     private String endDateName = "New Year";
     private String[] customRows;
 
+    // needed for DELETE ROW option
+    private int selectedRowIndex;
+
     public Calendar(){
         fileInput();
-        customRows = new String[rawTasksMap.size()];
-        countDaysUntilTheEndDate();
-    }
-
-    // worst clear console ever
-    private void cls(){
-        for (int i = 0; i <50; i++){
-            System.out.println();
-        }
     }
 
     // main function to draw a screen.
@@ -59,8 +51,8 @@ public class Calendar {
                         "Its " + daysUntilTheEndDate + " days until " + endDateName + "! or..");
 
                 // custom rows
-                for (int i = 0; i<customRows.length; i++) {
-                    System.out.println("\t" + customRows[i]);
+                for (String customRow : customRows) {
+                    System.out.println("\t" + customRow);
                 }
 
                 // menu
@@ -73,8 +65,20 @@ public class Calendar {
                 break;
 
             case DELETE_ROW:
+                System.out.println("\n" +
+                        "Which row do you want to delete?");
+                int counter = 1;
+                for (String customRow : customRows) {
+                    System.out.printf("%d. %s.\n", counter, customRow);
+                    counter++;
+                }
+                System.out.printf("%d. Back.\n", counter);
                 break;
-
+            case DELETE_ROW_CONFIRMATION:
+                System.out.println("\n" +
+                        "Are you sure you want to delete this custom row?(y/n)");
+                System.out.printf("\"%s\"\n", customRows[selectedRowIndex]);
+                break;
             case CREATE_NEW_ROW:
                 System.out.println("\n" +
                         "Write down the name of the new task, e.g., Gym or Meditation.");
@@ -141,20 +145,45 @@ public class Calendar {
                     case 5:
                         close();
                         break;
-
-                    // we need to separate the behavior of this case from default, because stringToInt returns 0
-                    // in case input wasn't successfully converted to integer, giving the inputHint the particular
-                    // error related to inability to convert String to Integer, while default gives an error
-                    // related to wrong integer input, when there is no such option to choose.
-                    case 0:
-                        break;
                     default:
-                        inputHint = "There is no option to choose with the number " + String.valueOf(userInput);
+                        // in case we already got inputHint from stringToInteger method
+                        if (inputHint.isBlank()) {
+                            inputHint = "There is no option to choose with the number " + String.valueOf(userInput);
+                        }
 
                 }
                 break;
 
             case DELETE_ROW:
+                int convertedInput = stringToInteger(userInput);
+                if (convertedInput <= 0 | convertedInput > customRows.length + 1){
+                    inputHint = "There is no option to choose with the number " + String.valueOf(userInput);
+
+                // exit option
+                } else if (convertedInput == (customRows.length + 1)){
+                    currentScreen = Screen.MAIN;
+                }
+                else{
+                    currentScreen = Screen.DELETE_ROW_CONFIRMATION;
+                    selectedRowIndex = convertedInput - 1;
+                }
+                break;
+
+            case DELETE_ROW_CONFIRMATION:
+                switch (userInput.toLowerCase()){
+                    case "y":
+                        currentScreen = Screen.DELETE_ROW;
+                        inputHint = "Row was successfully deleted.";
+                        rawTasksMap.remove(getTaskNameFromCustomRow(selectedRowIndex));
+                        fileOutput();
+                        fileInput();
+                        break;
+                    case "n":
+                        currentScreen = Screen.DELETE_ROW;
+                        break;
+                    default:
+                        inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                }
                 break;
 
             case CREATE_NEW_ROW:
@@ -187,6 +216,13 @@ public class Calendar {
         }
     }
 
+    // worst clear console ever
+    private void cls(){
+        for (int i = 0; i <50; i++){
+            System.out.println();
+        }
+    }
+
     // shuts down the calendar
     public void close(){
         runningState = false;
@@ -208,6 +244,14 @@ public class Calendar {
         }
     }
 
+    private String getTaskNameFromCustomRow(int index){
+        String customRow = customRows[index];
+        String[] parts = customRow.split(" ");
+        String result = String.join(" ", java.util.Arrays.copyOfRange(parts, 3, parts.length));
+        return result;
+    }
+
+    // TODO: replace HashMap with something with order
     // file input
     private void fileInput(){
         try {
@@ -221,17 +265,21 @@ public class Calendar {
                 rawTasksMap.put(temp[0], temp[1]);
             }
             tempScanner.close();
+            customRows = new String[rawTasksMap.size()];
+            countDaysUntilTheEndDate();
 
         } catch (FileNotFoundException e) {
             // creating blank file
             fileOutput();
+            System.out.println("Didn't work");
         }
     }
 
+    // TODO: replace HashMap with something with order
     // file output
     private void fileOutput(){
         try {
-            printWriter = new PrintWriter(file);
+            PrintWriter printWriter = new PrintWriter(file);
             for(Map.Entry<String, String> element: rawTasksMap.entrySet()){
                 printWriter.println(element.getKey() + ":" + element.getValue());
             }

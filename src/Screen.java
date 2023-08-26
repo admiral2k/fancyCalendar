@@ -13,6 +13,8 @@ public enum Screen {
             "|  |  | -_| | -_|  _| -_|  |    -| . | | | |__|\n" +
             "|____/|___|_|___|_| |___|  |__|__|___|_____|__|\n" +
             "                                               \n"),
+    DELETE_ROW_CONFIRMATION(DELETE_ROW.asciiLabel),
+
     CREATE_NEW_ROW("\n" +
             "                                                                 __ \n" +
             " _____             _          _____              _____          |  |\n" +
@@ -20,11 +22,8 @@ public enum Screen {
             "|   --|  _| -_| .'|  _| -_|  | | | | -_| | | |  |    -| . | | | |__|\n" +
             "|_____|_| |___|__,|_| |___|  |_|___|___|_____|  |__|__|___|_____|__|\n" +
             "                                                                    \n"),
-
     CREATE_NEW_ROW_NAME_CONFIRMATION(CREATE_NEW_ROW.asciiLabel),
-
     CREATE_NEW_ROW_TIME_INPUT(CREATE_NEW_ROW.asciiLabel),
-
     CREATE_NEW_ROW_TIME_CONFIRMATION(CREATE_NEW_ROW.asciiLabel),
 
     CHANGE_ORDER("\n" +
