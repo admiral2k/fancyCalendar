@@ -11,25 +11,34 @@ public class Calendar {
     private boolean runningState = true;
     private Screen currentScreen = Screen.MAIN;
 
+    // for input/output method
     private final Scanner scanner = new Scanner(System.in);
     private final File file = new File("data.txt");
+
+    // for containing raw custom rows
     private Map<String, String> rawTasksMap = new HashMap<>();
 
-    private String userInput = "";
-    private String taskName = "";
-    private String taskTime = "";
-    private String inputHint = "";
-
-    private long daysUntilTheEndDate;
-    private LocalDate todayDate = LocalDate.now();
-    private LocalDate endDate = LocalDate.of(todayDate.getYear() + 1, 1, 1);
-    private String endDateName = "New Year";
+    // for containing processed custom rows
     private String[] customRows;
+
+    private String userInput = "";
+    private String inputHint = "";
 
     // needed for DELETE ROW option
     private int selectedRowIndex;
 
+    // needed for ADD CUSTOM ROW option
+    private String taskName = "";
+    private String taskTime = "";
+
+    private final LocalDate todayDate = LocalDate.now();
+    private LocalDate endDate = LocalDate.of(todayDate.getYear() + 1, 1, 1);
+    private String endDateName = "New Year";
+    private long daysUntilTheEndDate;
+
+
     public Calendar(){
+        // initial file input
         fileInput();
     }
 
@@ -67,6 +76,8 @@ public class Calendar {
             case DELETE_ROW:
                 System.out.println("\n" +
                         "Which row do you want to delete?");
+
+                // to dynamically enumerate options
                 int counter = 1;
                 for (String customRow : customRows) {
                     System.out.printf("%d. %s.\n", counter, customRow);
@@ -74,11 +85,13 @@ public class Calendar {
                 }
                 System.out.printf("%d. Back.\n", counter);
                 break;
+
             case DELETE_ROW_CONFIRMATION:
                 System.out.println("\n" +
                         "Are you sure you want to delete this custom row?(y/n)");
                 System.out.printf("\"%s\"\n", customRows[selectedRowIndex]);
                 break;
+
             case CREATE_NEW_ROW:
                 System.out.println("\n" +
                         "Write down the name of the new task, e.g., Gym or Meditation.");
@@ -130,59 +143,54 @@ public class Calendar {
         switch (currentScreen){
             case MAIN:
                 switch (stringToInteger(userInput)) {
-                    case 1:
-                        currentScreen = Screen.DELETE_ROW;
-                        break;
-                    case 2:
-                        currentScreen = Screen.CREATE_NEW_ROW;
-                        break;
-                    case 3:
-                        currentScreen = Screen.CHANGE_ORDER;
-                        break;
-                    case 4:
-                        currentScreen = Screen.CHANGE_END_DATE;
-                        break;
-                    case 5:
-                        close();
-                        break;
-                    default:
+                    case 1 -> currentScreen = Screen.DELETE_ROW;
+                    case 2 -> currentScreen = Screen.CREATE_NEW_ROW;
+                    case 3 -> currentScreen = Screen.CHANGE_ORDER;
+                    case 4 -> currentScreen = Screen.CHANGE_END_DATE;
+                    case 5 -> close();
+                    default -> {
                         // in case we already got inputHint from stringToInteger method
                         if (inputHint.isBlank()) {
                             inputHint = "There is no option to choose with the number " + String.valueOf(userInput);
                         }
-
+                    }
                 }
                 break;
 
             case DELETE_ROW:
                 int convertedInput = stringToInteger(userInput);
+
+                // input is out of the range of options
                 if (convertedInput <= 0 | convertedInput > customRows.length + 1){
                     inputHint = "There is no option to choose with the number " + String.valueOf(userInput);
 
                 // exit option
                 } else if (convertedInput == (customRows.length + 1)){
                     currentScreen = Screen.MAIN;
-                }
-                else{
+                } else{
                     currentScreen = Screen.DELETE_ROW_CONFIRMATION;
+
+                    // subtract 1 because row counting starts at 1, while indexing starts at 0
                     selectedRowIndex = convertedInput - 1;
                 }
                 break;
 
             case DELETE_ROW_CONFIRMATION:
-                switch (userInput.toLowerCase()){
-                    case "y":
+                switch (userInput.toLowerCase()) {
+                    case "y" -> {
                         currentScreen = Screen.DELETE_ROW;
                         inputHint = "Row was successfully deleted.";
+
+                        // removing from rawTasksMap to update file data
                         rawTasksMap.remove(getTaskNameFromCustomRow(selectedRowIndex));
+
+                        // data updating
                         fileOutput();
+                        // recreating customRows array
                         fileInput();
-                        break;
-                    case "n":
-                        currentScreen = Screen.DELETE_ROW;
-                        break;
-                    default:
-                        inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                    }
+                    case "n" -> currentScreen = Screen.DELETE_ROW;
+                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
                 }
                 break;
 
@@ -218,17 +226,15 @@ public class Calendar {
 
     // worst clear console ever
     private void cls(){
-        for (int i = 0; i <50; i++){
-            System.out.println();
-        }
+        for (int i = 0; i <50; i++) System.out.println();
     }
 
     // shuts down the calendar
-    public void close(){
+    private void close(){
         runningState = false;
     }
 
-    // returns the state of the calendar. Needed for main loop.
+    // returns the state of the calendar. Needed for the main loop.
     public boolean isRunning(){
         return runningState;
     }
@@ -238,17 +244,18 @@ public class Calendar {
         try {
             return Integer.parseInt(s);
         } catch (NumberFormatException e) {
-            // Handle the exception, e.g., return null or log an error message
             inputHint = "The provided string is not a valid integer: " + s;
             return 0;
         }
     }
 
+    // extracts taskName from custom row. Needed for row removal
     private String getTaskNameFromCustomRow(int index){
         String customRow = customRows[index];
         String[] parts = customRow.split(" ");
-        String result = String.join(" ", java.util.Arrays.copyOfRange(parts, 3, parts.length));
-        return result;
+
+        // everything after third space is a taskName
+        return String.join(" ", java.util.Arrays.copyOfRange(parts, 3, parts.length));
     }
 
     // TODO: replace HashMap with something with order
@@ -257,6 +264,8 @@ public class Calendar {
         try {
             // creating tempScanner to not interrupt user input
             Scanner tempScanner = new Scanner(file);
+
+            // temporally stores input data
             String[] temp;
 
             // reading data
@@ -265,13 +274,13 @@ public class Calendar {
                 rawTasksMap.put(temp[0], temp[1]);
             }
             tempScanner.close();
+
             customRows = new String[rawTasksMap.size()];
             countDaysUntilTheEndDate();
 
         } catch (FileNotFoundException e) {
-            // creating blank file
+            // occurs in case file wasn't found. Creates blank file
             fileOutput();
-            System.out.println("Didn't work");
         }
     }
 
@@ -291,18 +300,24 @@ public class Calendar {
         }
     }
 
+    // counts days until the end date and processes custom rows
     private void countDaysUntilTheEndDate() {
         daysUntilTheEndDate = ChronoUnit.DAYS.between(todayDate, endDate);
+
         if (!rawTasksMap.isEmpty()) {
             int counter = 0;
             int tempTime;
             String timeUnit;
             String customRow;
+
             for (Map.Entry<String, String> element : rawTasksMap.entrySet()) {
-                tempTime = Integer.valueOf(element.getValue().split(" ")[0]);
+                // extracting amount of time from taskTime
+                tempTime = Integer.parseInt(element.getValue().split(" ")[0]);
+
+                // extracting time unit
                 timeUnit = element.getValue().split(" ")[1];
-                customRow = String.valueOf(tempTime * (daysUntilTheEndDate / 7)) + " " + timeUnit
-                        + " on " + element.getKey();
+
+                customRow = tempTime * (daysUntilTheEndDate / 7) + " " + timeUnit + " on " + element.getKey();
                 customRows[counter] = customRow;
                 counter++;
             }
