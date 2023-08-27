@@ -511,39 +511,41 @@ public class Calendar {
             String[] temp;
 
             // check for changed end date
-            String firstLine = tempScanner.nextLine();
-            if (firstLine.charAt(0) == ':'){
-                endDateChanged = true;
-                temp = firstLine.substring(1, firstLine.length()).split(":");
-                String[] parts = temp[0].split("-");
-                for (String part :
-                        parts) {
-                    System.out.println(part);
+            if (tempScanner.hasNextLine()) {
+                String firstLine = tempScanner.nextLine();
+                if (firstLine.charAt(0) == ':'){
+                    endDateChanged = true;
+                    temp = firstLine.substring(1, firstLine.length()).split(":");
+                    String[] parts = temp[0].split("-");
+                    for (String part :
+                            parts) {
+                        System.out.println(part);
+                    }
+                    int year = Integer.parseInt(parts[0]);
+                    int month = Integer.parseInt(parts[1]);
+                    int day = Integer.parseInt(parts[2]);
+                    endDate = LocalDate.of(year, month, day);
+                    endDateName = temp[1];
+                } else {
+                    tempScanner.close();
+                    tempScanner = new Scanner(file);
                 }
-                int year = Integer.parseInt(parts[0]);
-                int month = Integer.parseInt(parts[1]);
-                int day = Integer.parseInt(parts[2]);
-                endDate = LocalDate.of(year, month, day);
-                endDateName = temp[1];
-            } else {
-                tempScanner.close();
-                tempScanner = new Scanner(file);
-            }
 
-            // reading data
-            while (tempScanner.hasNextLine()){
-                temp = tempScanner.nextLine().split(":");
-                rawTasksMap.put(temp[0], temp[1]);
+                // reading data
+                while (tempScanner.hasNextLine()){
+                    temp = tempScanner.nextLine().split(":");
+                    rawTasksMap.put(temp[0], temp[1]);
+                }
             }
             tempScanner.close();
-
-            customRows = new String[rawTasksMap.size()];
-            countDaysUntilTheEndDate();
 
         } catch (FileNotFoundException e) {
             // occurs in case file wasn't found. Creates blank file
             fileOutput();
         }
+
+        customRows = new String[rawTasksMap.size()];
+        countDaysUntilTheEndDate();
     }
 
     // TODO: add endDate and endDateName output
