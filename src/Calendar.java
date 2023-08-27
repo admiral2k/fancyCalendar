@@ -6,6 +6,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Calendar {
     private boolean runningState = true;
@@ -93,25 +95,29 @@ public class Calendar {
                 break;
 
             case CREATE_NEW_ROW:
+                System.out.println("p.s. \"/back\" to go back.");
+
                 System.out.println("\n" +
                         "Write down the name of the new task, e.g., Gym or Meditation.");
                 break;
 
             case CREATE_NEW_ROW_NAME_CONFIRMATION:
                 System.out.printf("\n" +
-                        "Name of your task is \"%s\", right?(y/n)", taskName);
+                        "Name of your task is \"%s\", right?(y/n)\n", taskName);
                 break;
 
             case CREATE_NEW_ROW_TIME_INPUT:
+                System.out.println("p.s. \"/back\" to go back.");
+
                 System.out.println("\n" +
-                        "Write down the amount of time you need per week for taskName.\n" +
+                        "Write down the amount of time you need per week for " + taskName + ".\n" +
                         "Available time measurements include: days, hours, and minutes.\n" +
                         "For example: 6 hours, 3 days or 25 minutes.");
                 break;
 
             case CREATE_NEW_ROW_TIME_CONFIRMATION:
                 System.out.printf("\n" +
-                        "You spend %s on %s each week, right? (y/n)", taskTime, taskName);
+                        "You spend %s on %s each week, right?(y/n)\n", taskTime, taskName);
                 break;
 
             case CHANGE_ORDER:
@@ -195,25 +201,69 @@ public class Calendar {
                 break;
 
             case CREATE_NEW_ROW:
-                System.out.println("\n" +
-                        "Write down the name of the new task, e.g., Gym or Meditation.");
+                // step back
+                if (userInput.equals("/back")){
+                    currentScreen = Screen.MAIN;
+                    return;
+                }
+
+                // to prevent wrong behavior of fileInput method, since : is a separating symbol in a file
+                if (userInput.contains(":")) inputHint = "Character \":\" is forbidden.";
+
+                else{
+                    currentScreen = Screen.CREATE_NEW_ROW_NAME_CONFIRMATION;
+
+                    // deletes spaces and tabs at the beginning and at the end; deletes multiple spaces
+                    userInput = userInput.trim().replaceAll("\\s+", " ");
+                    taskName = userInput;
+                }
                 break;
 
             case CREATE_NEW_ROW_NAME_CONFIRMATION:
-                System.out.printf("\n" +
-                        "Name of your task is \"%s\", right?(y/n)", taskName);
+                switch (userInput.toLowerCase()) {
+                    case "y" -> currentScreen = Screen.CREATE_NEW_ROW_TIME_INPUT;
+                    case "n" -> currentScreen = Screen.CREATE_NEW_ROW;
+                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                }
                 break;
 
             case CREATE_NEW_ROW_TIME_INPUT:
-                System.out.println("\n" +
-                        "Write down the amount of time you need per week for taskName.\n" +
-                        "Available time measurements include: days, hours, and minutes.\n" +
-                        "For example: 6 hours, 3 days or 25 minutes.");
+                // step back
+                if (userInput.equals("/back")){
+                    currentScreen = Screen.CREATE_NEW_ROW_NAME_CONFIRMATION;
+                    return;
+                }
+
+                // formatting the input
+                userInput = userInput.toLowerCase().trim().replaceAll("\\s+", " ");
+
+                Pattern pattern = Pattern.compile("^\\d+\\s+(days|day|hours|hour|minute|minutes)$");
+                Matcher matcher = pattern.matcher(userInput);
+
+                if (matcher.matches()) {
+                    currentScreen = Screen.CREATE_NEW_ROW_TIME_CONFIRMATION;
+                    taskTime = userInput;
+                } else {
+                    System.out.println(1);
+                    inputHint = "The time input doesn't conform to the expected pattern. Please use this format: \"2 days\".";
+                }
                 break;
 
             case CREATE_NEW_ROW_TIME_CONFIRMATION:
-                System.out.printf("\n" +
-                        "You spend %s on %s each week, right? (y/n)", taskTime, taskName);
+                switch (userInput.toLowerCase()) {
+                    case "y" -> {
+                        currentScreen = Screen.MAIN;
+                        inputHint = "New custom row successfully created!";
+                        rawTasksMap.put(taskName, taskTime);
+
+                        // data updating
+                        fileOutput();
+                        // recreating customRows array
+                        fileInput();
+                    }
+                    case "n" -> currentScreen = Screen.CREATE_NEW_ROW_TIME_INPUT;
+                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                }
                 break;
 
             case CHANGE_ORDER:
