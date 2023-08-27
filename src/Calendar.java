@@ -43,6 +43,7 @@ public class Calendar {
     private LocalDate endDate = LocalDate.of(todayDate.getYear() + 1, 1, 1);
     private String endDateName = "New Year";
     private long daysUntilTheEndDate;
+    private boolean endDateChanged = false;
 
 
     public Calendar(){
@@ -440,6 +441,7 @@ public class Calendar {
                         // passing new values
                         endDate = tempDate;
                         endDateName = tempDateName;
+                        endDateChanged = true;
 
                         // data updating
                         fileOutput();
@@ -508,6 +510,26 @@ public class Calendar {
             // temporally stores input data
             String[] temp;
 
+            // check for changed end date
+            String firstLine = tempScanner.nextLine();
+            if (firstLine.charAt(0) == ':'){
+                endDateChanged = true;
+                temp = firstLine.substring(1, firstLine.length()).split(":");
+                String[] parts = temp[0].split("-");
+                for (String part :
+                        parts) {
+                    System.out.println(part);
+                }
+                int year = Integer.parseInt(parts[0]);
+                int month = Integer.parseInt(parts[1]);
+                int day = Integer.parseInt(parts[2]);
+                endDate = LocalDate.of(year, month, day);
+                endDateName = temp[1];
+            } else {
+                tempScanner.close();
+                tempScanner = new Scanner(file);
+            }
+
             // reading data
             while (tempScanner.hasNextLine()){
                 temp = tempScanner.nextLine().split(":");
@@ -529,6 +551,7 @@ public class Calendar {
     private void fileOutput(){
         try {
             PrintWriter printWriter = new PrintWriter(file);
+            if (endDateChanged) printWriter.println(":" + endDate + ":" + endDateName);
             for(Map.Entry<String, String> element: rawTasksMap.entrySet()){
                 printWriter.println(element.getKey() + ":" + element.getValue());
             }
