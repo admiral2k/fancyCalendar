@@ -34,6 +34,7 @@ public enum Screen {
             "|   --|   | .'|   | . | -_|  |  |  |  _| . | -_|  _|__|\n" +
             "|_____|_|_|__,|_|_|_  |___|  |_____|_| |___|___|_| |__|\n" +
             "                  |___|                                \n"),
+    CHANGE_ORDER_SECOND_ROW(CHANGE_ORDER.asciiLabel),
 
     CHANGE_END_DATE("\n" +
             "                                                                 __ \n" +

@@ -5,7 +5,7 @@ import java.io.PrintWriter;
 import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -20,7 +20,7 @@ public class Calendar {
     private final File file = new File("data.txt");
 
     // for containing raw custom rows
-    private final Map<String, String> rawTasksMap = new HashMap<>();
+    private final Map<String, String> rawTasksMap = new LinkedHashMap<>();
 
     // for containing processed custom rows
     private String[] customRows;
@@ -28,7 +28,7 @@ public class Calendar {
     private String userInput = "";
     private String inputHint = "";
 
-    // needed for DELETE ROW option
+    // needed for DELETE ROW and CHANG ORDER option
     private int selectedRowIndex;
 
     // needed for ADD CUSTOM ROW option
@@ -85,13 +85,7 @@ public class Calendar {
                 System.out.println("\n" +
                         "Which row do you want to delete?");
 
-                // to dynamically enumerate options
-                int counter = 1;
-                for (String customRow : customRows) {
-                    System.out.printf("%d. %s.\n", counter, customRow);
-                    counter++;
-                }
-                System.out.printf("%d. Back.\n", counter);
+                printEnumeratedCustomRows(1);
                 break;
 
             case DELETE_ROW_CONFIRMATION:
@@ -126,7 +120,23 @@ public class Calendar {
                         "You spend %s on %s each week, right?(y/n)\n", taskTime, taskName);
                 break;
 
+
             case CHANGE_ORDER:
+                System.out.println("\n" +
+                        "Here, you can swap the positions of rows.\n" +
+                        "Select the first row with which you want to swap positions.");
+
+                printEnumeratedCustomRows(1);
+                break;
+
+            case CHANGE_ORDER_SECOND_ROW:
+                System.out.println("First selected row: " + customRows[selectedRowIndex]);
+
+                System.out.println("\n" +
+                        "Here, you can swap the positions of rows.\n" +
+                        "Select the second row with which you want to swap positions.");
+
+                printEnumeratedCustomRows(1);
                 break;
 
             case CHANGE_END_DATE:
@@ -168,7 +178,6 @@ public class Calendar {
 
         // clears hintInput to prevent duplication of a problem that no longer exists
         inputHint = "";
-
     }
 
     // main project logic
@@ -185,29 +194,32 @@ public class Calendar {
                     default -> {
                         // in case we already got inputHint from stringToInteger method
                         if (inputHint.isBlank()) {
-                            inputHint = "There is no option to choose with the number " + String.valueOf(userInput);
+                            inputHint = "There is no option to choose with the number " + userInput;
                         }
                     }
                 }
                 break;
 
-            case DELETE_ROW:
+            // braces to separate the scope
+            case DELETE_ROW:{
                 int convertedInput = stringToInteger(userInput);
 
                 // input is out of the range of options
-                if (convertedInput <= 0 | convertedInput > customRows.length + 1){
-                    inputHint = "There is no option to choose with the number " + String.valueOf(userInput);
+                if (convertedInput <= 0 | convertedInput > customRows.length + 1) {
+                    // in case we already got inputHint from stringToInteger method
+                    if (inputHint.isBlank()) inputHint = "There is no option to choose with the number " + userInput;
 
-                // exit option
-                } else if (convertedInput == (customRows.length + 1)){
+                    // exit option
+                } else if (convertedInput == (customRows.length + 1)) {
                     currentScreen = Screen.MAIN;
-                } else{
+                } else {
                     currentScreen = Screen.DELETE_ROW_CONFIRMATION;
 
                     // subtract 1 because row counting starts at 1, while indexing starts at 0
                     selectedRowIndex = convertedInput - 1;
                 }
                 break;
+            }
 
             case DELETE_ROW_CONFIRMATION:
                 switch (userInput.toLowerCase()) {
@@ -224,7 +236,7 @@ public class Calendar {
                         fileInput();
                     }
                     case "n" -> currentScreen = Screen.DELETE_ROW;
-                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                    default -> inputHint = "There is no option \"" + userInput + "\".";
                 }
                 break;
 
@@ -251,7 +263,7 @@ public class Calendar {
                 switch (userInput.toLowerCase()) {
                     case "y" -> currentScreen = Screen.CREATE_NEW_ROW_TIME_INPUT;
                     case "n" -> currentScreen = Screen.CREATE_NEW_ROW;
-                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                    default -> inputHint = "There is no option \"" + userInput + "\".";
                 }
                 break;
 
@@ -290,12 +302,77 @@ public class Calendar {
                         fileInput();
                     }
                     case "n" -> currentScreen = Screen.CREATE_NEW_ROW_TIME_INPUT;
-                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                    default -> inputHint = "There is no option \"" + userInput + "\".";
                 }
                 break;
 
-            case CHANGE_ORDER:
+            // braces to separate the scope
+            case CHANGE_ORDER:{
+                int convertedInput = stringToInteger(userInput);
+
+                // input is out of the range of options
+                if (convertedInput <= 0 | convertedInput > customRows.length + 1) {
+                    // in case we already got inputHint from stringToInteger method
+                    if (inputHint.isBlank()) inputHint = "There is no option to choose with the number " + userInput;
+
+                    // exit option
+                } else if (convertedInput == (customRows.length + 1)) {
+                    currentScreen = Screen.MAIN;
+                } else {
+                    currentScreen = Screen.CHANGE_ORDER_SECOND_ROW;
+
+                    // subtract 1 because row counting starts at 1, while indexing starts at 0
+                    selectedRowIndex = convertedInput - 1;
+                }
                 break;
+            }
+
+            // braces to separate the scope
+            case CHANGE_ORDER_SECOND_ROW:{
+                int convertedInput = stringToInteger(userInput);
+
+                // input is out of the range of options
+                if (convertedInput <= 0 | convertedInput > customRows.length + 1) {
+                    // in case we already got inputHint from stringToInteger method
+                    if (inputHint.isBlank()) inputHint = "There is no option to choose with the number " + userInput;
+
+                // exit option
+                } else if (convertedInput == (customRows.length + 1)) {
+                    currentScreen = Screen.CHANGE_ORDER;
+
+                // selection of the same row that was selected
+                } else if (convertedInput == selectedRowIndex + 1) {
+                    inputHint = "Second row should differ from the first one.";
+
+                } else {
+                    currentScreen = Screen.CHANGE_ORDER;
+                    inputHint = "Rows were successfully swapped.";
+
+                    // swapping the rows
+                    Map<String, String> tempMap = new LinkedHashMap<>(rawTasksMap);
+                    String key1 = getTaskNameFromCustomRow(selectedRowIndex);
+                    String key2 = getTaskNameFromCustomRow(convertedInput - 1);
+                    String tempValue1 = tempMap.get(key1);
+                    String tempValue2 = tempMap.get(key2);
+
+                    rawTasksMap.clear();
+                    for (Map.Entry<String, String> element: tempMap.entrySet()) {
+                        if(element.getKey().equals(key1)){
+                            rawTasksMap.put(key2, tempValue2);
+                        } else if(element.getKey().equals(key2)){
+                            rawTasksMap.put(key1, tempValue1);
+                        } else {
+                            rawTasksMap.put(element.getKey(), element.getValue());
+                        }
+                    }
+
+                    // data updating
+                    fileOutput();
+                    // recreating customRows array
+                    fileInput();
+                }
+                break;
+            }
 
             case CHANGE_END_DATE:
                 // step back
@@ -370,7 +447,7 @@ public class Calendar {
                         fileInput();
                     }
                     case "n" -> currentScreen = Screen.CHANGE_END_DATE_NAME;
-                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                    default -> inputHint = "There is no option \"" +userInput + "\".";
                 }
                 break;
         }
@@ -410,8 +487,18 @@ public class Calendar {
         return String.join(" ", java.util.Arrays.copyOfRange(parts, 3, parts.length));
     }
 
+    // dynamically enumerates options
+    private void printEnumeratedCustomRows(int startingCounter){
+
+        int counter = startingCounter;
+        for (String customRow : customRows) {
+            System.out.printf("%d. %s.\n", counter, customRow);
+            counter++;
+        }
+        System.out.printf("%d. Back.\n", counter);
+    }
+
     // TODO: add endDate and endDateName input
-    // TODO: replace HashMap with something with order
     // file input
     private void fileInput(){
         try {
@@ -438,7 +525,6 @@ public class Calendar {
     }
 
     // TODO: add endDate and endDateName output
-    // TODO: replace HashMap with something with order
     // file output
     private void fileOutput(){
         try {
