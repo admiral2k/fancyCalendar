@@ -1,6 +1,8 @@
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
@@ -18,7 +20,7 @@ public class Calendar {
     private final File file = new File("data.txt");
 
     // for containing raw custom rows
-    private Map<String, String> rawTasksMap = new HashMap<>();
+    private final Map<String, String> rawTasksMap = new HashMap<>();
 
     // for containing processed custom rows
     private String[] customRows;
@@ -32,6 +34,10 @@ public class Calendar {
     // needed for ADD CUSTOM ROW option
     private String taskName = "";
     private String taskTime = "";
+
+    // needed for CHANGE END DATE option
+    private LocalDate tempDate;
+    private String tempDateName;
 
     private final LocalDate todayDate = LocalDate.now();
     private LocalDate endDate = LocalDate.of(todayDate.getYear() + 1, 1, 1);
@@ -124,6 +130,28 @@ public class Calendar {
                 break;
 
             case CHANGE_END_DATE:
+                System.out.println("p.s. \"/back\" to go back.");
+
+                System.out.printf("\n" +
+                                "Current end date is %s.%s.%s \"%s\".\n" +
+                                "To modify it, enter the date in the DD.MM.YYYY format.\n",
+                        endDate.getDayOfMonth(), endDate.getMonthValue(), endDate.getYear(), endDateName);
+                break;
+
+            case CHANGE_END_DATE_NAME:
+                System.out.println("p.s. \"/back\" to go back.");
+
+                System.out.println("\n" +
+                        "Write down the name of the end day event e.g. New Year, Graduation.");
+                break;
+
+            case CHANGE_END_DATE_CONFIRMATION:
+                System.out.println("p.s. \"/back\" to go back.");
+
+                System.out.printf("\n" +
+                        "Do you want to change end date from %s.%s.%s \"%s\" to %s.%s.%s \"%s\"?(y/n)\n",
+                        endDate.getDayOfMonth(), endDate.getMonthValue(), endDate.getYear(), endDateName,
+                        tempDate.getDayOfMonth(), tempDate.getMonthValue(), tempDate.getYear(), tempDateName);
                 break;
         }
     }
@@ -270,6 +298,80 @@ public class Calendar {
                 break;
 
             case CHANGE_END_DATE:
+                // step back
+                if (userInput.equals("/back")){
+                    currentScreen = Screen.MAIN;
+                    return;
+                }
+
+                try {
+                    String[] dateParts = userInput.split("\\.");
+                    int[] convertedParts = new int[3];
+
+                    // converts all string parts into integers
+                    for(int i = 0; i < dateParts.length; i++) convertedParts[i] = stringToInteger(dateParts[i]);
+                    tempDate = LocalDate.of(convertedParts[2], convertedParts[1], convertedParts[0]);
+
+                    // checking if the date is in the past
+                    if (ChronoUnit.DAYS.between(todayDate, tempDate) <= 0) throw new IOException();
+                    currentScreen = Screen.CHANGE_END_DATE_NAME;
+
+                } catch (DateTimeException e){
+                    // date matches the pattern but isn't valid
+                    if (inputHint.isBlank()) {
+                        inputHint = "The date " + userInput + " is invalid. Please enter a valid date.";
+
+                    // date doesn't match the pattern
+                    }else inputHint = "The date " + userInput + " doesn't match the expected pattern DD.MM.YYYY.";
+
+                } catch (IOException e) {
+                    inputHint = "The date can't be in the past. Please enter a valid date.";
+                }
+                break;
+
+            case CHANGE_END_DATE_NAME:
+                // step back
+                if (userInput.equals("/back")){
+                    currentScreen = Screen.CHANGE_END_DATE;
+                    return;
+                }
+
+                // to prevent wrong behavior of fileInput method, since : is a separating symbol in a file
+                if (userInput.contains(":")) inputHint = "Character \":\" is forbidden.";
+
+                else{
+                    currentScreen = Screen.CHANGE_END_DATE_CONFIRMATION;
+
+                    // deletes spaces and tabs at the beginning and at the end; deletes multiple spaces
+                    userInput = userInput.trim().replaceAll("\\s+", " ");
+                    tempDateName = userInput;
+                }
+                break;
+
+            case CHANGE_END_DATE_CONFIRMATION:
+                // step back
+                if (userInput.equals("/back")){
+                    currentScreen = Screen.CHANGE_END_DATE_NAME;
+                    return;
+                }
+
+                switch (userInput.toLowerCase()) {
+                    case "y" -> {
+                        currentScreen = Screen.MAIN;
+                        inputHint = "End date is successfully changed!";
+
+                        // passing new values
+                        endDate = tempDate;
+                        endDateName = tempDateName;
+
+                        // data updating
+                        fileOutput();
+                        // recreating customRows array
+                        fileInput();
+                    }
+                    case "n" -> currentScreen = Screen.CHANGE_END_DATE_NAME;
+                    default -> inputHint = "There is no option \"" + String.valueOf(userInput) + "\".";
+                }
                 break;
         }
     }
@@ -308,6 +410,7 @@ public class Calendar {
         return String.join(" ", java.util.Arrays.copyOfRange(parts, 3, parts.length));
     }
 
+    // TODO: add endDate and endDateName input
     // TODO: replace HashMap with something with order
     // file input
     private void fileInput(){
@@ -334,6 +437,7 @@ public class Calendar {
         }
     }
 
+    // TODO: add endDate and endDateName output
     // TODO: replace HashMap with something with order
     // file output
     private void fileOutput(){
